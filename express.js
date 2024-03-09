@@ -68,8 +68,58 @@ app.post('/createData',(req,res)=>{
     })
 })
 
+ //update the data
+app.put('/addData/:id',(req,res)=>{
+    var id = Number(req.params.id);
 
+    mongoClient.connect(ConnectionString)
+    .then(response=>{
+        var dataBase = response.db('firstDataBase')
+        return dataBase.collection('tbl1').updateOne({id:id},{$set:{ Name:req.body.Name}})
+    })
+    .then(()=>{
+        res.send("Updated succesfully")
+    })
+    .catch(err=>{
+        console.log(err);
+    })
+})
  
+// {
+//     "_id": "65c7bdfa6d9585c89f7d9d1e",
+//     "branch": "CS",
+//     "id": 1,
+//     "Name": "jigyasa Singh",
+//     "updatedata": {                   //To delete this object we use $unset
+//       "Name": "jigyasa Singh"
+//     }
+//   }, 
+app.put('/deleteData/:id',(req,res)=>{
+    mongoClient.connect(ConnectionString)
+    .then(response=>{
+        let dataBase = response.db('firstDataBase')
+        return dataBase.collection('tbl1').updateOne({id:Number(req.params.id)},{$unset:{updatedata:1}})
+    }).then(doc=>{
+        res.send("deleted one coloum")
+    }).catch(err=>{
+        console.log(err);
+    })
+ })
+
+   //Delete Data
+app.delete('/delete/:id',(req,res)=>{
+    mongoClient.connect(ConnectionString)
+    .then(clientObj=>{
+        let dataBase =clientObj.db('firstDataBase')
+        return dataBase.collection('tbl1').deleteOne({id:(req.params.id)})
+    })
+    .then(docum=>{
+        res.send("Deleted Succesfully")
+    }).catch(error=>{
+        console.log(error);
+    })
+})
+
 app.listen(8080,()=>{
    console.log("Server Started")
 })
