@@ -1,9 +1,9 @@
-
-var mongoClient = require('mongodb').MongoClient;
 var express = require('express')
 var cors = require('cors');
 const { MongoConnection } = require('./mongodb');
-var ConnectionString = 'mongodb://localhost:27017';
+var jwt = require('jsonwebtoken')
+var secreteKey= "iamjigyasa"
+
 var app = express()
 app.use(cors())
 app.use(express.urlencoded({
@@ -23,7 +23,6 @@ app.use(express.json())
     if (!dataItem.firstName || !dataItem.lastName || !dataItem.emailId || !dataItem.password) {
         return res.status(400).json({ msg: 'Invalid parameters', result: [] });
     }
-
     MongoConnection.then(collection => {
         return collection.insertOne(dataItem);
     })
@@ -45,7 +44,6 @@ app.use(express.json())
   //Login User
   app.post('/login', (req, res) => {
     const { email, pass } = req.body; 
-
     if (!email || !pass) {
         return res.status(400).json({ msg: 'Invalid parameters', result: [] });
     }
@@ -53,13 +51,14 @@ app.use(express.json())
         return collection.findOne({ $and: [{ emailId: email }, { password: pass }] });
     })
     .then(response => {
+        var token= jwt.sign({data:response},secreteKey,{ expiresIn: 60*60})
         if (!response) {
             return res.status(401).json({ msg: 'Invalid email or password', result: [] });
         } else {
             return res.status(200).json({
                 msg: 'Login Successfully',
                 result: [{ firstName: response.firstName, lastName: response.lastName, EmailId: response.emailId }],
-                token: ''
+                Token: token
             });
         }
     })
